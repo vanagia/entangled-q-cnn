@@ -5,7 +5,7 @@ import torchvision.transforms as transforms
 
 class torchMNIST():
     """MNIST dataset loader."""
-    
+
     classes = ('zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine')
 
     def __init__(self, batchsize=10, legendre=False, download=False):

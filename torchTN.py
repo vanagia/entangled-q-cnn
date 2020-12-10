@@ -265,7 +265,7 @@ def marginal_contr(net, x=np.array([]), half=False, c0=1./math.sqrt(2), evalmode
         return g2
 
 
-def EEhalf(net, c0 = 1./math.sqrt(2), prt=False):
+def EEhalf(net, c0 = 1./math.sqrt(2), svd=False, prt=False):
     """Computes entanglement entropy of bipartition."""
     # calculate N = Tr_B(|phi_B^b> <phi_B^b'|) = <phi_B^b|phi_B^b'> total contraction with free outer legs only
     #N = marginal_contr(net, half = True, prt = prt).tensor.detach().numpy()
@@ -275,7 +275,7 @@ def EEhalf(net, c0 = 1./math.sqrt(2), prt=False):
         L = L.tensor.detach().numpy()
 
     # diagonalize N = P.D.Pinv, Pdagg = Pinv unitary
-    d, P = np.linalg.eigh(N) ## USE EIGH METHOD SINCE N IS HERMITIAN!!!
+    d, P = np.linalg.eigh(N)
     Pinv = np.linalg.inv(P)
     Pdagg = np.transpose(np.conjugate(P))
     errorP = np.amax(np.abs(Pdagg - Pinv))
@@ -288,9 +288,10 @@ def EEhalf(net, c0 = 1./math.sqrt(2), prt=False):
     # define U := P.Dsq.Pinv so that N = U.Udagg, same shape as N
     Dsq = np.diag(np.sqrt(np.abs(d)))
     U = contract(P, [0,1], Dsq, [1,2], Pdagg, [2,3], [0,3])
-    Udagg = np.transpose(np.conjugate(U))
-    errorU = np.amax(np.abs(N - contract(U, [0,1], Udagg, [1,2], [0,2])))
+   
     if prt:
+        Udagg = np.transpose(np.conjugate(U))
+        errorU = np.amax(np.abs(N - contract(U, [0,1], Udagg, [1,2], [0,2])))
         print("Nmin:", np.amin(np.abs(N)), ", error in N=U.U^dagger:", errorU, "Nmax:", np.amax(np.abs(N)))
         print()
 
@@ -309,38 +310,43 @@ def EEhalf(net, c0 = 1./math.sqrt(2), prt=False):
         M[y] = M[y] / np.trace(M[y])
 
     # diagonalize M^Y = V^Y.S^Y.Vinv^Y
-    s, V = np.linalg.eigh(M)
-    Vinv = np.linalg.inv(V[0])
-    Vdagg = np.transpose(np.conjugate(V[0]))
-    errorV = np.amax(np.abs(Vdagg - Vinv))
+    if svd:
+        u, s, vh = np.linalg.svd(M, compute_uv = True)
+    else:
+        s, V = np.linalg.eigh(M)
+    
     if prt:
+        Vinv = np.linalg.inv(V[0])
+        Vdagg = np.transpose(np.conjugate(V[0]))
+        errorV = np.amax(np.abs(Vdagg - Vinv))
         print("Unitarity error in V:", errorV)
         print("min Vdagg:", np.amin(np.abs(Vdagg)),"max Vdagg", np.amax(np.abs(Vdagg)))
         print("min Vinv:", np.amin(np.abs(Vinv)),"max Vinv", np.amax(np.abs(Vinv)))
         print()
 
-    id = contract(V[0],[0,1], Vdagg,[1,2], [0,2])
-    if prt:
+        id = contract(V[0],[0,1], Vdagg,[1,2], [0,2])
         print("V.Vdagg min/max:", np.amin(id), np.amax(id))
 
+
     # chop extremely small eigenvalues and verify that remaining ones are positive
-    for y in range(s.shape[0]):
-        for i in range(s.shape[1]):
-            if np.abs(np.imag(s[y, i])) != 0 and np.abs(np.imag(s[y, i])) < 10e-8:
-                if np.real(s[y, i]) >= 0:
-                    s[y, i] = np.real(s[y, i])
-                elif np.abs(np.real(s[y, i])) < 10e-8:
-                    s[y, i] = 0.0
-                    ff=1
-                else:
-                    raise Exception("negative eigenvalue...", s[y, i])
-            elif np.real(s[y, i]) < 0:
-                if np.abs(np.real(s[y, i])) < 10e-8:
-                    s[y, i] = 0.0
-                    ff=1
-                else:
-                    raise Exception("negative eigenvalue...", s[y, i])
-    s = np.real(s)
+    if not svd:
+        for y in range(s.shape[0]):
+            for i in range(s.shape[1]):
+                if np.abs(np.imag(s[y, i])) != 0 and np.abs(np.imag(s[y, i])) < 10e-8:
+                    if np.real(s[y, i]) >= 0:
+                        s[y, i] = np.real(s[y, i])
+                    elif np.abs(np.real(s[y, i])) < 10e-8:
+                        s[y, i] = 0.0
+                        ff=1
+                    else:
+                        raise Exception("negative eigenvalue...", s[y, i])
+                elif np.real(s[y, i]) < 0:
+                    if np.abs(np.real(s[y, i])) < 10e-8:
+                        s[y, i] = 0.0
+                        ff=1
+                    else:
+                        raise Exception("negative eigenvalue...", s[y, i])
+        s = np.real(s)
 
     # calculate EE based on eigenvalues s_i, and normalize
     p = np.empty_like(s)
@@ -363,6 +369,7 @@ def EEhalf(net, c0 = 1./math.sqrt(2), prt=False):
 
     if prt:
         print("max EE:", np.round(math.log(len(V[0])), 5))
+    print(ee)
 
     return ee
 

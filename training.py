@@ -23,11 +23,12 @@ def specialized_loss(output, target):
 class Training():
     """Class for training the network."""
 
-    def __init__(self, net, loader, stats=False, n_epochs=1):
-        self.n_epochs = n_epochs
+    def __init__(self, net, loader, n_epochs=1, stats=False, svd=False):
         self.net = net
         self.loader = loader
+        self.n_epochs = n_epochs
         self.stats = stats
+        self.svd = svd
 
         self.loss_fn = specialized_loss
         self.optimizer = optim.AdamW(self.net.parameters(), lr=1e-2, weight_decay=0.01)
@@ -83,7 +84,7 @@ class Training():
                     tqdm.write("Average loss: %.4f" % (running_loss / print_interval))
                     # Keep track of various stats
                     if self.stats:
-                        EE.append(torchTN.EEhalf(self.net))
+                        EE.append(torchTN.EEhalf(self.net, svd=self.svd))
                         cost.append(running_loss / print_interval)
                     running_loss = 0.0
 
