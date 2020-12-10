@@ -5,7 +5,7 @@ import math
 
 
 class Spinrep(nn.Module):
-    """Spin representation layer."""
+    """Representation layer."""
 
     def __init__(self, dim, device, legendre=False, flatt_LR=False):
         super(Spinrep, self).__init__()
