@@ -23,7 +23,7 @@ if __name__ == '__main__':
     trainer = Training(net, loader.torchMNIST(batchsize=50), n_epochs=90, stats=True, svd=False)
     #trainer = Training(net, loader.FMNIST(batchsize=50), n_epochs=90, stats=True)
 
-    EE, cost, train_acc, test_acc, test_cost = trainer.train_loop(valid=False)
+    EE, cost, train_acc, test_acc, test_cost = trainer.train_loop(valid=True)
 
     elapsed = time.time() - start
     print('(%.1fs)\n' % elapsed)
