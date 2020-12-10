@@ -369,7 +369,6 @@ def EEhalf(net, c0 = 1./math.sqrt(2), svd=False, prt=False):
 
     if prt:
         print("max EE:", np.round(math.log(len(V[0])), 5))
-    print(ee)
 
     return ee
 
