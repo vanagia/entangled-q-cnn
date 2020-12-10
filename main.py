@@ -20,7 +20,7 @@ if __name__ == '__main__':
     net = QCNN(max_frequency=9, legendre=False, biasf=False, device=device).to(device)
     net.double()
 
-    trainer = Training(net, loader.torchMNIST(batchsize=50), n_epochs=90, stats=True)
+    trainer = Training(net, loader.torchMNIST(batchsize=50), n_epochs=90, stats=False)
     #trainer = Training(net, loader.FMNIST(batchsize=50), n_epochs=90, stats=True)
 
     EE, cost, train_acc, test_acc, test_cost = trainer.train_loop(valid=True)

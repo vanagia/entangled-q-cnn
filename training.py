@@ -30,7 +30,7 @@ class Training():
         self.stats = stats
 
         self.loss_fn = specialized_loss
-        self.optimizer = optim.Adam(self.net.parameters(), lr=1e-2, weight_decay=0.01)
+        self.optimizer = optim.AdamW(self.net.parameters(), lr=1e-2, weight_decay=0.01)
         self.device = next(self.net.parameters()).device
 
     def train_step(self, input=torch.empty(1), label=torch.empty(1)):
@@ -69,7 +69,7 @@ class Training():
                 for param_group in self.optimizer.param_groups:
                     param_group['lr'] = 0.5 * param_group['lr']
     
-            print("Training in epoch %d/%d has started!" % (epoch + 1, self.n_epochs))
+            print("\nTraining in epoch %d/%d has started!" % (epoch + 1, self.n_epochs))
             for i, data in tqdm(enumerate(self.loader.trainloader, 1), ncols=50, total=int(len(self.loader.trainset)/self.loader.trainloader.batch_size), miniters=1):
                 input_batch = data[0].to(self.device).double()
                 label_batch = data[1].to(self.device)
