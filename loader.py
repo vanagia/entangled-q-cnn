@@ -5,14 +5,14 @@ import torchvision.transforms as transforms
 
 class torchMNIST():
     """MNIST dataset loader."""
-    transform = transforms.Compose([transforms.Resize((16, 16)), transforms.ToTensor()]) # range [0.0, 1.0]
+    
     classes = ('zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine')
 
     def __init__(self, batchsize=10, legendre=False, download=False):
-        #if legendre:
-         #   self.transform = transforms.Compose([transforms.Resize((16, 16)), transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))]) # range [-1.0, 1.0]
-        #else:
-         #   self.transform = transforms.Compose([transforms.Resize((16, 16)), transforms.ToTensor()]) # range [0.0, 1.0]
+        if legendre:
+            self.transform = transforms.Compose([transforms.Resize((16, 16)), transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))]) # range [-1.0, 1.0]
+        else:
+            self.transform = transforms.Compose([transforms.Resize((16, 16)), transforms.ToTensor()]) # range [0.0, 1.0]
 
         self.trainset = torchvision.datasets.MNIST(root='data', train=True, download=download, transform=self.transform)
         self.trainloader = torch.utils.data.DataLoader(self.trainset, batch_size=batchsize, shuffle=True, num_workers=0)
